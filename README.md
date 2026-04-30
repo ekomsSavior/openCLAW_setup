@@ -375,3 +375,5 @@ You now have a fully functional OpenClaw agent running on your Zima Board inside
 Your agent can write exploit code, research vulnerabilities, scan networks (with your permission), manage GitHub repositories, and browse the web. All of this runs inside a container that cannot touch your host system files unless you explicitly mount them.
 
 To make it do something specific, just ask it in Telegram. Tell it to audit a GitHub repository for security issues. Tell it to write a buffer overflow exploit for a training challenge. Tell it to research and explain the latest attack techniques. The agent will use its tools and skills to accomplish whatever you ask, within the constraints you defined in AGENTS.md.
+
+## only use on Networks you have permission to test on
