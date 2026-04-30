@@ -4,13 +4,13 @@ Zima/openCLAW
 
 You are building a penetration testing and offensive coding master.
 
-CRITICAL: You said your Zima Board has multiple OS options. DO NOT use Windows 11 for this. DO NOT use a dual-boot setup. You must use a Debian-based Linux distribution (Ubuntu, Debian, Kali Linux) as the base OS on the Zima Board. Docker runs natively on Linux.
 
 Step 1: Prepare Your Zima Board's Operating System
 
 SSH into your Zima Board or open a terminal directly on it.
 
 First, update everything.
+
 
 sudo apt update && sudo apt upgrade -y
 
