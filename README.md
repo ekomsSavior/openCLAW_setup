@@ -1,3 +1,363 @@
+#VPS OPENCLAW SETUP 
+Kali VPS OpenClaw Cybersecurity Setup Walkthrough
+
+This guide walks you through installing OpenClaw on a Kali Linux VPS, configuring DeepSeek as your AI model, and connecting Telegram so you can control your cybersecurity AI agent from anywhere.
+
+What You Are Building
+
+You are setting up an autonomous AI agent that runs 24/7 on your VPS. This agent can:
+
+· Search the web for security research and CVE information
+· Write and execute code (with your approval)
+· Connect to GitHub to read and write repositories
+· Interact with you through Telegram from anywhere
+· Be programmed with a "soul" file that defines its cybersecurity role
+
+OpenClaw is an agent harness that works 24/7 to automate tasks. DeepSeek-V4 is now the default model, providing enhanced reasoning and agent execution capabilities.
+
+Prerequisites
+
+Before starting, you need two things:
+
+1. DeepSeek API Key – Get it from https://platform.deepseek.com/api_keys. It starts with sk-.
+2. Telegram Bot Token – Message @BotFather on Telegram, send /newbot, follow the prompts, and copy the token. It looks like 1234567890:ABCdefGHIjklMNOpqrsTUVwxyz.
+
+Step 1: Prepare Your Kali VPS Environment
+
+SSH into your Kali VPS as root (Kali typically uses root by default, but if you're using a non-root user with sudo, adjust commands accordingly).
+
+Update the system:
+
+```bash
+apt update && apt upgrade -y
+```
+
+Install essential build tools:
+
+```bash
+apt install -y build-essential git curl wget
+```
+
+Step 2: Install Node.js 22
+
+OpenClaw requires Node.js version 22 or higher. Use NodeSource for the official binary:
+
+```bash
+curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
+apt install -y nodejs
+```
+
+Verify the installation:
+
+```bash
+node --version   # Should show v22.x.x
+npm --version    # Should show 10.x.x or higher
+```
+
+Step 3: Install OpenClaw
+
+The official install script handles everything automatically:
+
+```bash
+curl -fsSL https://openclaw.ai/install.sh | bash
+```
+
+The script will:
+
+· Clone the OpenClaw repository
+· Install dependencies
+· Build the project
+· Make the openclaw command available
+
+After the script finishes, reload your shell:
+
+```bash
+source ~/.bashrc
+```
+
+Verify the installation:
+
+```bash
+openclaw --version
+```
+
+If you get "command not found", add the npm global bin directory to your PATH:
+
+```bash
+echo 'export PATH="/root/.npm-global/bin:$PATH"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+Step 4: Run the Setup Wizard
+
+Start the configuration wizard:
+
+```bash
+openclaw onboard
+```
+
+The wizard will guide you through:
+
+1. Security disclaimer – select Yes to continue
+2. Setup mode – choose QuickStart
+3. Gateway configuration – accept defaults (port 18789, loopback binding)
+4. Model provider – select DeepSeek
+5. DeepSeek API key – paste your key
+6. Model selection – choose deepseek/deepseek-chat (or the default V4 flash version)
+7. Channel selection – choose Telegram (Bot API)
+8. Telegram plugin – select Use local plugin path
+9. Telegram bot token – paste your token from BotFather
+10. DM policy – select pairing (secure default requiring approval)
+
+When the wizard finishes, it will display a pairing code. Copy this code.
+
+Step 5: Pair Your Telegram Account
+
+Open Telegram on your phone or computer. Find your bot by searching for its username.
+
+Send the pairing code as a message. Just the code, nothing else.
+
+The bot will confirm that you are now paired.
+
+If you need to approve a pairing code manually from the command line:
+
+```bash
+openclaw pairing approve telegram YOUR_CODE_HERE
+```
+
+Step 6: Create Your Cybersecurity Agent Soul (AGENTS.md)
+
+This is where you define your AI agent's role. OpenClaw agents are specialized through a "soul" file that contains system prompts and behavioral protocols. Create a file called AGENTS.md in the workspace:
+
+```bash
+mkdir -p /root/clawd
+nano /root/clawd/AGENTS.md
+```
+
+Paste this configuration for a cybersecurity penetration testing agent:
+
+```markdown
+# Agent: Cybersecurity Penetration Testing Specialist
+
+_You are an autonomous security researcher and penetration tester. Your environment is Kali Linux, equipped with standard security tools._
+
+## Core Truths
+
+**Find Vulnerabilities.** Your purpose is to identify security weaknesses in code and infrastructure through authorized testing.
+**Do No Harm.** Never execute attacks on systems without explicit permission from the user.
+**Document Everything.** Every finding requires evidence and remediation steps.
+
+## Operational Protocols
+
+- Use the cycle: `THOUGHT:` -> `ACTION:` -> `OBSERVATION:` for every step
+- Research known vulnerabilities using web_search
+- Write and test exploit proofs-of-concept only when ethically authorized
+- Generate secure code following OWASP guidelines
+
+## Available Tools
+
+- exec – Run commands with user approval
+- web_search – Research CVEs and exploits
+- read/write – Work with files
+- github – Clone and manage repositories
+
+## Constraints
+
+- Never execute commands that modify system files without confirmation
+- Always ask for explicit permission before scanning external targets
+- Report findings with severity ratings (Critical/High/Medium/Low)
+- Include remediation steps for every vulnerability found
+```
+
+Save the file (Ctrl+O, Enter, Ctrl+X).
+
+Load this soul into OpenClaw:
+
+```bash
+openclaw agent load --file /root/clawd/AGENTS.md
+```
+
+Step 7: Start the Gateway
+
+Start the OpenClaw gateway:
+
+```bash
+openclaw gateway
+```
+
+You will see log output showing the gateway is running. Keep this terminal open.
+
+To verify the gateway is running properly:
+
+```bash
+openclaw gateway status
+```
+
+If you need to restart the gateway later:
+
+```bash
+openclaw gateway restart
+```
+
+Step 8: Test Your Agent
+
+Send test messages to your Telegram bot to verify each capability.
+
+Test 1 – Basic conversation:
+Send: Who are you and what is your purpose?
+
+The bot should respond based on your AGENTS.md file.
+
+Test 2 – Web search:
+Send: Search the web for the latest critical CVEs released this month.
+
+The bot will use the web_search tool to find and summarize recent vulnerabilities.
+
+Test 3 – Code execution with approval:
+Send: Write a Python script that scans 127.0.0.1 for open ports 22, 80, and 443. Then run it.
+
+The bot will generate the code and ask for your approval. Type yes or approve to let it run.
+
+Test 4 – Security research:
+Send: Research Log4Shell and explain the exploit, impact, and mitigation.
+
+The bot will search the web and provide a detailed analysis.
+
+Step 9: Configure GitHub Access (Optional)
+
+If you want your agent to interact with GitHub repositories, generate a personal access token:
+
+1. Go to GitHub.com -> Settings -> Developer settings -> Personal access tokens -> Tokens (classic)
+2. Generate new token
+3. Name it "OpenClaw Agent"
+4. Expiration: No expiration
+5. Scopes: check repo and workflow
+6. Copy the token
+
+Set the token in OpenClaw:
+
+```bash
+openclaw config set integrations.github.token YOUR_GITHUB_TOKEN
+```
+
+Restrict which repositories the agent can access:
+
+```bash
+openclaw config set integrations.github.repos "YOUR_USERNAME/REPO_NAME"
+```
+
+Enable GitHub in the configuration file:
+
+```bash
+nano ~/.openclaw/openclaw.json
+```
+
+Find the github section and change "enabled": false to "enabled": true. Save and exit.
+
+Restart the gateway:
+
+```bash
+openclaw gateway restart
+```
+
+Step 10: Install Additional Skills
+
+OpenClaw's capabilities can be extended with skills that add specific tools. Install useful skills for cybersecurity work:
+
+```bash
+cd ~/openclaw
+npx clawhub install desearch-web-search --force
+npx clawhub install proactive-agent
+npx clawhub install skill-vetter
+```
+
+After installing skills, restart the gateway:
+
+```bash
+openclaw gateway restart
+```
+
+Step 11: Keep the Gateway Running Permanently
+
+Since you are on a VPS, you want the agent to keep running even after you disconnect. Use tmux:
+
+```bash
+apt install -y tmux
+tmux new -s openclaw
+openclaw gateway
+```
+
+Press Ctrl+B, then D to detach. The gateway continues running.
+
+To reattach later:
+
+```bash
+tmux attach -t openclaw
+```
+
+Alternative: Install as a systemd service:
+
+```bash
+openclaw onboard --install-daemon
+systemctl enable openclaw-gateway
+systemctl start openclaw-gateway
+```
+
+Security Hardening
+
+OpenClaw can execute commands on your system, which requires careful security considerations.
+
+Approval Required: Your configuration already has "confirm": true for the exec tool. OpenClaw will never run a terminal command without your explicit yes or approve in Telegram.
+
+Limited Workspace: The workspace is set to /root/clawd. The agent cannot read or write outside this directory by default. Do not change this to a broader path.
+
+Pairing Protection: DM policy is set to pairing, which means unknown users who message your bot receive a pairing code. You must approve them before they can interact.
+
+Protect the Gateway Token: The token in ~/.openclaw/openclaw.json controls access to the web UI. Keep it secret.
+
+For multi-user scenarios, run openclaw security audit --deep regularly.
+
+Useful Maintenance Commands
+
+Command Description
+openclaw gateway status Check if gateway is running
+openclaw gateway restart Restart the gateway
+openclaw gateway stop Stop the gateway
+openclaw pairing list List approved Telegram users
+openclaw logs View agent logs
+openclaw config get models.providers.deepseek.apiKey Verify DeepSeek API key
+openclaw doctor --fix Diagnose and fix configuration issues
+journalctl -u openclaw-gateway -f View systemd service logs (if using daemon)
+
+Troubleshooting
+
+Gateway already running error: Run openclaw gateway stop first, then openclaw gateway.
+
+Pairing does not persist in Docker/container: If you see repeated pairing requests despite approving, check that credentials are being saved to persistent storage. The approval should be recorded in /data/.openclaw/credentials/telegram-pairing.json.
+
+Bot does not respond: Check the gateway logs for errors. Most often this is an invalid API key or bot token.
+
+"command not found" for openclaw: Add the npm global bin directory to PATH: export PATH="/root/.npm-global/bin:$PATH"
+
+Port 18789 already in use: Stop the existing gateway with openclaw gateway stop or use a different port in the config file.
+
+Web interface shows unauthorized: The token in your URL must match the token in ~/.openclaw/openclaw.json under gateway.auth.token.
+
+What's Next
+
+Your OpenClaw agent is now running on your Kali VPS with DeepSeek as the AI engine. You can control it entirely through Telegram.
+
+To explore more advanced configurations:
+
+· Create multiple agent souls for different roles (Red Team, Blue Team)
+· Connect additional channels like Discord, Slack, or WhatsApp
+· Integrate with Composio for access to 1000+ tools across different apps
+· Build automated workflows that run on schedules
+
+For complete documentation, visit docs.openclaw.ai.
+
+---
+
 # zima-board-openclaw-
 
 Zima/openCLAW
