@@ -1,4 +1,4 @@
-#VPS OPENCLAW SETUP 
+# VPS OPENCLAW SETUP 
 Kali VPS OpenClaw Cybersecurity Setup Walkthrough
 
 This guide walks you through installing OpenClaw on a Kali Linux VPS, configuring DeepSeek as your AI model, and connecting Telegram so you can control your cybersecurity AI agent from anywhere.
